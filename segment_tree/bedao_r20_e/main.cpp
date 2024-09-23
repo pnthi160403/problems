@@ -25,10 +25,16 @@ struct Node {
 
 struct ST {
     vector<Node> st;
+    vector<int> lz;
     string s;
     int n;
     vector<ll> pw;
-    Node combine(Node l, Node r) {
+    Node combine(Node &l, Node &r) {
+        if (l.sz == 0) {
+            return r;
+        } else if (r.sz == 0) {
+            return l;
+        }
         Node res;
         for(int i = 0; i < 26; i++) {
             res.left[i] = (l.left[i] * pw[r.sz] % MOD + r.left[i]) % MOD;
@@ -42,13 +48,31 @@ struct ST {
         s = _s;
         n = (int)s.length();
         st.assign(4 * n, Node());
+        lz.assign(4 * n, 0);
         build(1, 0, n - 1);
+    }
+    vector<ll> rotate_arr(vector<ll> &arr, int k) {
+        vector<ll> res((int)arr.size(), 0);
+        for(int i = 0; i < 26; i++) {
+            res[(i + k) % 26] = arr[i];
+        }
+        return res;
+    }
+    void down(int id) {
+        lz[id * 2] = (lz[id * 2] + lz[id]) % 26;
+        lz[id * 2 + 1] = (lz[id * 2 + 1] + lz[id]) % 26;
+        st[id * 2].left = rotate_arr(st[id * 2].left, lz[id * 2]);
+        st[id * 2].right = rotate_arr(st[id * 2].right, lz[id * 2]);
+        st[id * 2 + 1].left = rotate_arr(st[id * 2 + 1].left, lz[id * 2 + 1]);
+        st[id * 2 + 1].right = rotate_arr(st[id * 2 + 1].right, lz[id * 2 + 1]);
+        lz[id] = 0;
     }
     void build(int id, int l, int r) {
         if (l == r) {
             int id_char = (int)(s[l] - 'a');
             st[id].left[id_char] = st[id].right[id_char] = pw[1];
             st[id].sz = 1;
+            lz[id] = 0;
         } else {
             int mid = (l + r) / 2;
             build(id * 2, l, mid);
@@ -60,9 +84,11 @@ struct ST {
         if (l > v || r < u) {
             return;
         } else if (l >= u && r <= v) {
-            rotate(st[id].left.begin(), st[id].left.begin() + k % 26, st[id].left.end());
-            rotate(st[id].right.begin(), st[id].right.begin() + k % 26, st[id].right.end());
+            st[id].left = rotate_arr(st[id].left, k);
+            st[id].right = rotate_arr(st[id].right, k);
+            lz[id] = (lz[id] + k) % 26;
         } else {
+            down(id);
             int mid = (l + r) / 2;
             update(id * 2, l, mid, u, v, k);
             update(id * 2 + 1, mid + 1, r, u, v, k);
@@ -75,13 +101,10 @@ struct ST {
         } else if (l >= u && r <= v) {
             return st[id];
         } else {
+            down(id);
             int mid = (l + r) / 2;
             Node getl = get(id * 2, l, mid, u, v);
             Node getr = get(id * 2 + 1, mid + 1, r, u, v);
-            if (getl.sz == 0)
-                return getr;
-            else if (getr.sz == 0)
-                return getl;
             return combine(getl, getr);
         }
     }
@@ -105,7 +128,7 @@ int32_t main() {
             int l, r, k;
             cin >> l >> r >> k;
             l--, r--;
-            st.update(1, 0, n - 1, l, r, k);
+            st.update(1, 0, n - 1, l, r, k % 26);
         } else if (type == 2) {
             int l, r;
             cin >> l >> r;
@@ -116,10 +139,6 @@ int32_t main() {
                 get_sum_l = (get_sum_l + 1ll * (i + 1) * get_node.left[i]) % MOD;
                 get_sum_r = (get_sum_r + 1ll * (i + 1) * get_node.right[i]) % MOD;
             }
-            cerr << "l = " << l << endl;
-            cerr << "r = " << r << endl;
-            cerr << "get_sum_l = " << get_sum_l << endl;
-            cerr << "get_sum_r = " << get_sum_r << endl;
             if (get_sum_l != get_sum_r) {
                 cout << (r - l + 1) << endl;
             } else {
