@@ -59,6 +59,8 @@ struct ST {
         return res;
     }
     void down(int id) {
+        if (lz[id] == 0)
+            return;
         lz[id * 2] = (lz[id * 2] + lz[id]) % 26;
         lz[id * 2 + 1] = (lz[id * 2 + 1] + lz[id]) % 26;
         st[id * 2].left = rotate_arr(st[id * 2].left, lz[id * 2]);
