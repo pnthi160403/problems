@@ -2,10 +2,8 @@
 #define ll long long
 #define endl '\n'
 #define ff(i, x, y) for(int i = x; i <= y; i++)
-#define fr(i, x, y) for(int i = x; i >= y; i--)
 #define fi first
 #define se second
-#define pb push_back
 
 using namespace std;
 
