@@ -27,7 +27,10 @@ struct FT {
         if (l - 1 >= 1) return get(r) - get(l - 1);
         return get(r);
     }
-};
+} ft1, ft2;
+
+const int N = (int)1e5;
+vector<int> cur_val(N + 1);
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
@@ -44,10 +47,8 @@ int32_t main() {
         if (x.l / B != y.l / B) return x.l / B < y.l / B;
         return x.r < y.r;
     });
-    FT ft1, ft2;
     ft1.init(n);
     ft2.init(n);
-    vector<int> cur_val(n + 1, 0);
     auto add = [&](int i) -> void {
         i = a[i];
         ft1.add(i, 1);
